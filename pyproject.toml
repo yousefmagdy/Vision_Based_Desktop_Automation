@@ -1,0 +1,51 @@
+[project]
+name = "vision-desktop-automation"
+version = "0.1.0"
+description = "Vision-based desktop automation with dynamic icon grounding using Florence-2"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "transformers>=4.46.0",
+    "Pillow>=10.0.0",
+    "pyautogui>=0.9.54",
+    "pywin32>=306",
+    "requests>=2.31.0",
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0",
+    "psutil>=5.9.0",
+    "loguru>=0.7.0",
+    "tenacity>=8.2.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-mock>=3.12.0",
+    "ruff>=0.3.0",
+]
+
+[project.scripts]
+vision-auto = "vision_desktop_automation.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vision_desktop_automation"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
