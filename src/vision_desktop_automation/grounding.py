@@ -632,7 +632,11 @@ class VisualGrounder:
             )
             return None
 
-        best = detections[0]
+        # Disambiguate similar matches (e.g., "Notepad" vs "Notepad++")
+        best = self.select_best_match(detections, target)
+        if best is None:
+            best = detections[0]
+
         elapsed = time.time() - start
         logger.info(
             f"Grounded '{target}' at center=({best.center[0]}, {best.center[1]}), "

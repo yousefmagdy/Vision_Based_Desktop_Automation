@@ -111,24 +111,29 @@ class TestRegionBias:
         assert result[0].label == "br"
 
 
-class TestDisambiguation:
-    """Tests for disambiguating multiple similar icons."""
+class TestSelectBestMatch:
+    """Tests for disambiguating similarly named icons."""
 
     def setup_method(self) -> None:
         self.grounder = VisualGrounder.__new__(VisualGrounder)
+        self.grounder.config = Config()
 
     def test_exact_match_priority(self) -> None:
-        # If we have "Notepad" and "Notepad++" on screen, and we search for "Notepad"
-        d1 = Detection(bbox=(0, 0, 50, 50), confidence=0.9, label="Notepad++")
-        d2 = Detection(bbox=(100, 100, 150, 150), confidence=0.9, label="Notepad")
-        
-        best = self.grounder.select_best_match([d1, d2], "Notepad")
-        assert best is d2  # Must select the exact match "Notepad"
+        d_sub = Detection(bbox=(0, 0, 10, 10), confidence=0.9, label="My Notepad")
+        d_pref = Detection(bbox=(0, 0, 10, 10), confidence=0.95, label="Notepad++")
+        d_exact = Detection(bbox=(0, 0, 10, 10), confidence=0.8, label="Notepad")
 
-    def test_prefix_match(self) -> None:
-        # If we search for "Notepad" and only find "Notepad.lnk"
-        d = Detection(bbox=(0, 0, 50, 50), confidence=0.9, label="Notepad.lnk")
-        
-        best = self.grounder.select_best_match([d], "Notepad")
-        assert best is d
+        # Even though Notepad has lower confidence, it should win because it is an exact match
+        result = self.grounder.select_best_match([d_sub, d_pref, d_exact], "Notepad")
+        assert result is not None
+        assert result.label == "Notepad"
+
+    def test_prefix_match_fallback(self) -> None:
+        d_sub = Detection(bbox=(0, 0, 10, 10), confidence=0.9, label="My Notepad")
+        d_pref = Detection(bbox=(0, 0, 10, 10), confidence=0.9, label="Notepad++")
+
+        # Notepad++ should win over My Notepad because it starts with "Notepad"
+        result = self.grounder.select_best_match([d_sub, d_pref], "Notepad")
+        assert result is not None
+        assert result.label == "Notepad++"
 
